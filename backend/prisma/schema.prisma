@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum BoardRole {
+  OWNER
+  MEMBER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  ownedBoards  Board[]       @relation("OwnerBoards")
+  boardMembers BoardMember[]
+
+  activities Activity[]
+}
+
+model Board {
+  id        String   @id @default(uuid())
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+
+  owner   User          @relation("OwnerBoards", fields: [ownerId], references: [id])
+  members BoardMember[]
+
+  lists List[]
+
+  activities Activity[]
+}
+
+model BoardMember {
+  id      String    @id @default(uuid())
+  userId  String
+  boardId String
+  role    BoardRole @default(MEMBER)
+
+  user  User  @relation(fields: [userId], references: [id])
+  board Board @relation(fields: [boardId], references: [id])
+
+  @@unique([userId, boardId])
+}
+
+model List {
+  id        String   @id @default(uuid())
+  title     String
+  boardId   String
+  position  Int
+  createdAt DateTime @default(now())
+
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  tasks Task[]
+
+  @@index([boardId])
+  @@index([boardId, position])
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  listId      String
+  position    Int
+  assignedTo  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  list List @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@index([listId])
+  @@index([listId, position])
+  @@index([assignedTo])
+
+  @@index([title])
+  @@index([createdAt])
+}
+
+model Activity {
+  id        String   @id @default(uuid())
+  boardId   String
+  userId    String
+  type      String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([boardId])
+  @@index([createdAt])
+}
