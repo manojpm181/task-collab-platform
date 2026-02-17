@@ -198,7 +198,7 @@ Frontend
 - Client-side search (server-side extensible)
 - Designed for clarity, cost efficiency, and interview practicality.
 
-###✅ Conclusion
+### ✅ Conclusion
 
 - This project demonstrates:
 - Real-world full-stack architecture
